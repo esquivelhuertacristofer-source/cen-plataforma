@@ -1,19 +1,4 @@
-import { Epilogue, Instrument_Serif } from "next/font/google";
 import "./globals.css";
-
-const epilogue = Epilogue({
-  subsets: ["latin"],
-  variable: "--font-epilogue",
-  weight: ["400", "500", "700", "800", "900"],
-  display: 'swap',
-});
-
-const instrumentSerif = Instrument_Serif({
-  subsets: ["latin"],
-  variable: "--font-instrument",
-  weight: ["400"],
-  display: 'swap',
-});
 
 export const metadata = {
   title: "CEN | Plataforma de Educación Financiera",
@@ -31,7 +16,7 @@ export const viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className={`${epilogue.variable} ${instrumentSerif.variable} font-epilogue antialiased`}>
+      <body className="font-epilogue antialiased">
         {children}
       </body>
     </html>
