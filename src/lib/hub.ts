@@ -1,14 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { supabase } from './supabase'; 
-import RAW_DATA_PRI_1 from '../data/pedagogia/primaria/p1.json';
-import RAW_DATA_PRI_2 from '../data/pedagogia/primaria/p2.json';
-import RAW_DATA_PRI_3 from '../data/pedagogia/primaria/p3.json';
-import RAW_DATA_PRI_4 from '../data/pedagogia/primaria/p4.json';
-import RAW_DATA_PRI_5 from '../data/pedagogia/primaria/p5.json';
-import RAW_DATA_PRI_6 from '../data/pedagogia/primaria/p6.json';
-import RAW_DATA_SEC_1 from '../data/pedagogia/secundaria/s1.json';
-import RAW_DATA_SEC_2 from '../data/pedagogia/secundaria/s2.json';
-import RAW_DATA_SEC_3 from '../data/pedagogia/secundaria/s3.json';
+import { supabase } from './supabase';
 
 export { supabase };
 
@@ -93,17 +84,22 @@ export const TEST_ACCOUNTS: Record<string, UserProfile> = {
 
 // ─── Data Access ──────────────────────────────────────────────────────────────
 
-const RAW_DATA: Record<string, any> = {
-  'primary-1': RAW_DATA_PRI_1,
-  'primary-2': RAW_DATA_PRI_2,
-  'primary-3': RAW_DATA_PRI_3,
-  'primary-4': RAW_DATA_PRI_4,
-  'primary-5': RAW_DATA_PRI_5,
-  'primary-6': RAW_DATA_PRI_6,
-  'secondary-1': RAW_DATA_SEC_1,
-  'secondary-2': RAW_DATA_SEC_2,
-  'secondary-3': RAW_DATA_SEC_3,
-};
+const curriculumCache: Record<string, any> = {};
+
+async function getCurriculumData(grade: number, schoolLevel: string): Promise<any> {
+  const levelKey = (schoolLevel || 'primary').toLowerCase().includes('secundar') ? 'secondary' : 'primary';
+  const key = `${levelKey}-${grade}`;
+  if (curriculumCache[key]) return curriculumCache[key];
+  try {
+    const response = await fetch(`/api/curriculum/${key}`);
+    if (!response.ok) return null;
+    const data = await response.json();
+    curriculumCache[key] = data;
+    return data;
+  } catch {
+    return null;
+  }
+}
 
 const CATEGORY_STYLES: Record<string, any> = {
   // P1, P2, P4, P5
@@ -193,10 +189,9 @@ function deriveModality(unitRaw: any): Modality {
   return 'reading';
 }
 
-export function getPillarsForGrade(grade: number, schoolLevel: string = 'primary'): PillarMeta[] {
+export async function getPillarsForGrade(grade: number, schoolLevel: string = 'primary'): Promise<PillarMeta[]> {
   const levelKey = (schoolLevel || 'primary').toLowerCase().includes('secundar') ? 'secondary' : 'primary';
-  const dataKey = `${levelKey}-${grade}`;
-  const source = RAW_DATA[dataKey];
+  const source = await getCurriculumData(grade, schoolLevel);
 
   if (!source) return [];
 
@@ -552,11 +547,11 @@ function deriveGrade(schoolLevel: string | null): number {
   return match ? parseInt(match[0], 10) : (schoolLevel.toLowerCase().includes('secundar') ? 1 : 4);
 }
 
-export function getQuizForUnit(unitCode: string): QuizQuestion[] {
+export async function getQuizForUnit(unitCode: string): Promise<QuizQuestion[]> {
   const parts = unitCode.split('-');
-  const grade = parts[0].substring(1);
-  const level = parts[0].startsWith('P') ? 'primary' : 'secondary';
-  const source = RAW_DATA[`${level}-${grade}`];
+  const grade = parseInt(parts[0].substring(1), 10);
+  const schoolLevel = parts[0].startsWith('P') ? 'primary' : 'secondary';
+  const source = await getCurriculumData(grade, schoolLevel);
   if (source && source[unitCode]) {
     const questions = source[unitCode].evaluation?.exam_questions || [];
     return questions.map((q: any) => ({
@@ -568,18 +563,17 @@ export function getQuizForUnit(unitCode: string): QuizQuestion[] {
   return [{ q: '¿Qué es el ahorro?', options: ['Gastar todo', 'Guardar parte del dinero para después'], correct: 1 }];
 }
 
-export function getArenaQuiz(grade: number, schoolLevel: string): QuizQuestion[] {
+export async function getArenaQuiz(grade: number, schoolLevel: string): Promise<QuizQuestion[]> {
   const key = `${schoolLevel.toLowerCase().includes('secundar') ? 'secondary' : 'primary'}-${grade}`;
   const info = GRADE_INFO[key];
-  
+
   if (info && info.arenaQuiz) {
     return info.arenaQuiz;
   }
 
-  // Fallback a lógica de unidades si no hay quiz específico
-  const pillars = getPillarsForGrade(grade, schoolLevel);
+  const pillars = await getPillarsForGrade(grade, schoolLevel);
   const questions: QuizQuestion[] = [];
-  pillars.flatMap(p => p.units).forEach(u => {
+  pillars.flatMap((p: PillarMeta) => p.units).forEach((u: Unit) => {
     if (u.evaluation?.exam_questions) {
       u.evaluation.exam_questions.forEach((q: any) => {
         questions.push({ q: q.question, options: q.options, correct: q.options.indexOf(q.correct) !== -1 ? q.options.indexOf(q.correct) : 0, explanation: u.title });
@@ -612,9 +606,9 @@ export function getPillarProgress(pillar: PillarMeta, completed: Set<string>) {
   return { done, total: pillar.units.length, pct: Math.round((done / pillar.units.length) * 100) };
 }
 
-export function getPillarById(id: string, grade: number, schoolLevel: string = 'primary'): PillarMeta | null {
-  const pillars = getPillarsForGrade(grade, schoolLevel);
-  return pillars.find(p => p.id === id) || null;
+export async function getPillarById(id: string, grade: number, schoolLevel: string = 'primary'): Promise<PillarMeta | null> {
+  const pillars = await getPillarsForGrade(grade, schoolLevel);
+  return pillars.find((p: PillarMeta) => p.id === id) || null;
 }
 
 export function checkRankUp(pillar: PillarMeta, oldCompleted: Set<string>, newCompleted: Set<string>) {

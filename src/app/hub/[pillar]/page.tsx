@@ -82,9 +82,9 @@ export default function PillarPageV19({ params }: { params: any }) {
 
     async function load() {
       // Emergency timeout to prevent infinite loading if DB hangs
-      const timeout = setTimeout(() => {
+      const timeout = setTimeout(async () => {
         if (loading) {
-          const found = getPillarById(pillarId!, FALLBACK_PROFILE.grade, FALLBACK_PROFILE.school_level ?? 'primary');
+          const found = await getPillarById(pillarId!, FALLBACK_PROFILE.grade, FALLBACK_PROFILE.school_level ?? 'primary');
           setUserId(FALLBACK_PROFILE.id);
           setPillar(found);
           setLoading(false);
@@ -99,13 +99,13 @@ export default function PillarPageV19({ params }: { params: any }) {
         }
 
         const progressData = await getCompletedActivities(profile.id);
-        const found = getPillarById(pillarId!, profile.grade, profile.school_level ?? 'primary');
-        
+        const found = await getPillarById(pillarId!, profile.grade, profile.school_level ?? 'primary');
+
         setPillar(found);
         setUserId(profile.id);
         setCompleted(progressData);
       } catch {
-        const errPillar = getPillarById(pillarId!, FALLBACK_PROFILE.grade, FALLBACK_PROFILE.school_level ?? 'primary');
+        const errPillar = await getPillarById(pillarId!, FALLBACK_PROFILE.grade, FALLBACK_PROFILE.school_level ?? 'primary');
         setPillar(errPillar);
       } finally {
         setLoading(false);

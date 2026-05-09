@@ -43,7 +43,7 @@ export default function AchievementsPage() {
       const progress = await getCompletedActivities(p.id);
       setCompleted(progress);
 
-      const gradePillars = getPillarsForGrade(p.grade, p.school_level ?? 'primary');
+      const gradePillars = await getPillarsForGrade(p.grade, p.school_level ?? 'primary');
       setPillars(gradePillars);
       setLoading(false);
     }

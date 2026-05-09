@@ -36,7 +36,7 @@ import {
   ChevronRight,
   X
 } from 'lucide-react';
-import { markActivityComplete, getQuizForUnit } from '../../lib/hub';
+import { markActivityComplete } from '../../lib/hub';
 import { getActivityData, calculateXP } from '../../lib/activities';
 
 // Importación de todos los motores de actividades Diamond State

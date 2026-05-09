@@ -39,7 +39,7 @@ export default function LibraryPage() {
         if (!p) { router.replace('/log-in'); return; }
         setProfile(p);
 
-        const gradePillars = getPillarsForGrade(p.grade, p.school_level ?? 'primary');
+        const gradePillars = await getPillarsForGrade(p.grade, p.school_level ?? 'primary');
         setPillars(gradePillars);
         setGradeMeta(getGradeMetadata(p.grade, p.school_level ?? 'primary'));
       } catch {

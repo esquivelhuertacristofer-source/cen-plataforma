@@ -15,6 +15,7 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   outputFileTracingIncludes: {
     '/api/activity/[activityId]': ['./src/data/actividades/**/*.json'],
+    '/api/curriculum/[levelGrade]': ['./src/data/pedagogia/**/*.json'],
   },
 };
 

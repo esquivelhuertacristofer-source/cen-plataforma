@@ -154,10 +154,11 @@ export default function ModulosPage() {
 
   const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
 
-  const pillarsForGrade = React.useMemo(() => {
-    if (!selectedGrade) return [];
+  const [pillarsForGrade, setPillarsForGrade] = useState<PillarMeta[]>([]);
+  useEffect(() => {
+    if (!selectedGrade) { setPillarsForGrade([]); return; }
     const [level, numStr] = selectedGrade.split("-");
-    return getPillarsForGrade(parseInt(numStr), level);
+    getPillarsForGrade(parseInt(numStr), level).then(setPillarsForGrade);
   }, [selectedGrade]);
 
   const CONTENT_COLORS: Record<string, string> = {

@@ -14,7 +14,7 @@ export default function MissionPage() {
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
     setPillarId(id);
-    setPillar(getPillarById(id || 'p1', FALLBACK_PROFILE.grade, 'primary'));
+    getPillarById(id || 'p1', FALLBACK_PROFILE.grade, 'primary').then(setPillar);
   }, []);
 
   if (!pillar) return <div className="h-screen bg-[#011126]" />;

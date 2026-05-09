@@ -104,7 +104,7 @@ export default function StudentHubV19() {
           setTotalXP(parseInt(localStorage.getItem(`cen_xp_${p.id}`) ?? '0', 10));
           const progress = await getCompletedActivities(p.id);
           setCompleted(progress);
-          const gradePillars = getPillarsForGrade(p.grade, p.school_level ?? 'primary');
+          const gradePillars = await getPillarsForGrade(p.grade, p.school_level ?? 'primary');
           setPillars(gradePillars);
           
           // Sincronización crítica de metadatos del grado
@@ -170,10 +170,10 @@ export default function StudentHubV19() {
     };
   }, [router]);
 
-  const startArena = () => {
+  const startArena = async () => {
     if (!profile) return;
     playSFX('click');
-    const questions = getArenaQuiz(profile.grade, profile.school_level ?? 'primary');
+    const questions = await getArenaQuiz(profile.grade, profile.school_level ?? 'primary');
     setArenaQuiz(questions);
     setShowArena(true);
   };

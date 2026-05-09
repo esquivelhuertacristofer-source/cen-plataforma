@@ -61,13 +61,13 @@ export default function MissionPage() {
 
         const effectiveProfile = profile || FALLBACK_PROFILE;
         const progressData = await getCompletedActivities(effectiveProfile.id);
-        const found = getPillarById(pillarId!, effectiveProfile.grade, effectiveProfile.school_level ?? 'primary');
-        
+        const found = await getPillarById(pillarId!, effectiveProfile.grade, effectiveProfile.school_level ?? 'primary');
+
         setPillar(found);
         setUserId(effectiveProfile.id);
         setCompleted(progressData);
       } catch (err) {
-        const errPillar = getPillarById(pillarId!, FALLBACK_PROFILE.grade, FALLBACK_PROFILE.school_level ?? 'primary');
+        const errPillar = await getPillarById(pillarId!, FALLBACK_PROFILE.grade, FALLBACK_PROFILE.school_level ?? 'primary');
         setPillar(errPillar);
       }
     }
